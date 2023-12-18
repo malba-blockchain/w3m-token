@@ -1,0 +1,309 @@
+cd D:\USER\Downloads\ATLAS\Projects\W3MToken
+
+
+https://github.com/scaffold-eth/scaffold-eth-2
+
+yarn install
+
+npm install @chainlink/contracts
+
+yarn add --dev @nomicfoundation/hardhat-network-helpers
+
+
+
+yarn chain
+
+yarn start
+
+yarn deploy --reset
+
+yarn deploy --reset --network hardhat
+
+yarn deploy --reset --network polygonMumbai --show-stack-traces
+
+
+http://localhost:3000
+
+
+Edit your app config in packages/nextjs/scaffold.config.ts
+Edit your frontend in packages/nextjs/pages
+Edit your smart contract YourContract.sol in packages/hardhat/contracts
+
+Edit your deployment scripts in packages/hardhat/deploy
+
+yarn chain
+
+yarn test
+
+yarn generate
+
+Generated wallet address: 0x01eE4E5BB23B904025631953c5dD1dd0eb95671b
+
+yarn account
+
+yarn deploy --network polygonMumbai
+
+yarn verify --network polygonMumbai
+
+
+-----------DONE----------
+
+1. Create and deploy the 5 ERC-20 tokens to emulate the crypto to be received and send some to your wallet DONE
+-Send some of that token to your wallet
+
+
+2. Create the own ERC-20 W3M token to be bought DONE
+2.1. Change the owner of the ERC20 for the address you can control in the interface
+
+2.2. Can I store the tokens in the smart contract?  Yes, it looks like... For now
+
+https://medium.com/coinmonks/how-to-transfer-tokens-to-the-owner-address-and-not-stuck-in-contract-address-in-solidity-4fdd7f1f7575
+
+
+
+3. Get the information to ask for the current price of the MATIC using chainlink
+
+https://docs.chain.link/data-feeds/price-feeds/addresses?network=polygon&page=1&search=
+
+https://data.chain.link/polygon/mainnet/crypto-usd/matic-usd
+
+https://polygonscan.com/address/0xab594600376ec9fd91f8e885dadf0ce036862de0#readContract
+
+3.1. It got a hardhat error after I installed the "npm install @chainlink/contracts" DONE
+
+3.2. Add a Delay between the deploy of the different tokens so it doesnt use the same nonce await sleep(1000); DONE
+
+3.3. Deploy the smart contract in the mumbai testnet. Dont forget to send MATIC to the local address to be able to deploy DONE
+
+
+
+4. Create a function that recieves the matic emulation in exchange of the W3M token
+
+-Verify the MATICTOKEN smart contract over the mumbai network https://mumbai.polygonscan.com/address/0x388E8F01fE2c2d1Ae8ce8B8A18e1De03F9e0A8F8#readContract
+
+Deploy again the W3M smart contract and approve the spending of MATIC tokens from polygonscan. DONE
+
+Amount: 1000000000000000000000
+
+Solve the error: "The contract function "investFromMatic" reverted with the following reason: ERC20: transfer amount exceeds balance". DONE
+
+The challenge appears when sending the W3M tokens to the investor DONE
+
+Then: Should it leave the crypto tokens in the smart contract instead of the owner wallet?
+https://stackoverflow.com/questions/71941928/how-to-transfer-erc20-tokens-to-another-address-using-solidity
+
+
+
+5. Add the USDC token to the environment
+
+-Verify the USDCTOKEN smart contract over the mumbai network 
+
+https://mumbai.polygonscan.com/address/0xAD42272cA8cEF831cC442E744eF2ab6a38BE7295#code
+
+Deploy again the W3M smart contract and approve the spending of USDC tokens from polygonscan.
+
+Amount: 1000000000000000000000
+
+6. Create a function to receive MATIC nativ
+ely and other to receive other ERC20 - tokens
+
+7. Update the github
+
+8. Create the new project
+
+9. Add the functions and variables from documentation
+-Launch and validate the smart contract of all the tokens. Send you 100K DONE
+-Make the owner be able to change the oracle and token and oracle addresses DONE
+-Add the token issuance function DONE
+-Add the last investFromToken functions DONE
+-Add events to all the functions DONE
+-Validate that there are still tokens left to be sold. If necessary, change the order of the functions in the smart contract "investFrom" functions DONE
+
+-Launch and quickly test the smart contract using scaffold DONE
+
+10. Extra requirements for business model
+
+-Add minimum investment validation and modification DONE
+
+-Add independent public view quote functionality so that the team can quote directly from my smart contract DONE
+
+-Add white list functionality. Mapping with address and boolean. Executed by wallet assigned by the owner.
+--Create address whiteListerAddress DONE
+--Assign whiteListerAddress in the constructor DONE
+--Create whiteListerAddress modification functionality. OnlyOwner DONE
+--Create event of UpdatedWhiteListerAddress DONE
+--Create mapping the white list DONE
+--Create add to whiteList functionality. Require whiteListerAddress || owner() DONE
+--Create event of addedToWhiteList (sender, investor address) DONE
+--Create remove from whitelist functionality. Require whiteListerAddress || owner() DONE
+--Create event of removedFromWhiteList (sender, investor address) DONE
+--Validate that the transaction sender is on the whitelist when making any investment DONE
+--Generally test all those new functions DONE
+
+11. Create the maximum buying limits.
+-event of UpdatedMaximumW3mToBuy DONE
+-variable of maximumW3mToBuy DONE
+-constructor of maximumW3mToBuy DONE
+-add restriction in calculateTotalW3mTokenToReturn DONE
+-create function of updatedMaximumW3mToBuy DONE
+
+
+11.1. Track the total amount of W3M bought by an investor.
+-create mapping of (address investor => uint256 totalW3mBought) DONE
+-update mapping in all investFrom* methods just befor emiting the event and return DONE
+
+
+11.2. Track the difference between qualified investor and non qualified investor
+-create mapping of isQualified (address investor => bool) DONE
+-create functions to add and remove qualified investors only executable by owner and whitelister
+-add control of qualified investor over all 5 investFrom* methods
+
+12. Validation tasks
+
+12.1. Validate new token values DONE
+
+12.2. Deploy Smart contract V2 with independet calculateTotalW3mTokenToReturn DONE
+
+12.3. Cambiar nombre inversor calificado DONE
+
+12.4. Validar funcionalidad transfer DONE
+
+
+13. Update amount of tokens to emit. Now its 500 M W3M
+
+14. Change the name of totalW3mBoughtByInvestor
+-Validate the revert function works DONE
+-Update in all invest from function the validateMaximumInvestedAmountAndInvestorLimit and the update of bought tokens and invested USD amount DONE
+-Update event of invest from DONE
+
+15. Create the test cases
+
+-Main description of test cases by functionality DONE
+-Code design of test cases DONE
+
+
+16. Launch in sepolia to test safe multisig wallet
+
+16.1. Launch crypto tokens
+
+16.2 Get oracles/ price data feed from chainlink in sepolia 
+
+yarn deploy --network sepolia
+yarn verify --network sepolia
+
+16.3 Modify the smart contract variables in constructor and deploy DONE
+
+https://sepolia.etherscan.io/address/0x426E8d4F56FB9D13b2b5f19380e9a53249d1ec27#code
+
+
+16.4. Test it DONE
+
+
+17. VULNERABILITIES TO BE AWARE OF: 
+1. ABI Hash Collisions - Smart contract (Be aware of the use of abi.encodePacked)
+2. Ambiguous Evaluation Order - Smart contract (Use parenthesis and variables to store values of long functions)
+3. Approval Vulnerabilities - Frontend (Perform Ethical Hacking)
+4. Exposed Data - Project (Don't upload PII to the blockchain)
+5. Frontrunning - Out of scope
+6. Griefing - Smart contract (Delayed withdrawal of funds with timestamp)
+7. Gas Griefing Attacks - Smart contract (Check the successful execution of external smart contract calls)
+8. Incorrect Parameter Order - Smart contract (Check the order of parameters that arrive in the functions)
+9. Oracle Manipulation - Smart contract (Use chainlink)
+10. Reentrancy - Smart contract (Use ReentrancyGuard on withdrawal functions)
+11. Signature-related Attacks - Smart contract (Be aware of the use of ECDSA | and signatures)
+12. Unexpected Ether Transfers - Smart contract (Be aware of the functions that receive ether like payable and receive)
+13. Unsafe private key storage - Backend (Follow best practices for Private key management)
+
+READ https://scsfg.io/developers/testing/
+
+-----------ToDo----------
+
+
+-----------------------------------REFERENCES-----------------------------------
+
+SMART CONTRACT W3Mv1 - Investment only in MATIC and USDC
+0xe4D22a46d315B5A3dfA257E6891609865DDa4581
+https://mumbai.polygonscan.com/address/0xe4D22a46d315B5A3dfA257E6891609865DDa4581#code
+
+
+SMART CONTRACT W3Mv2 - Investment from all crypto currencies available
+0x1e4eF3d5ca14F68b21A4587b027cEb5986cb7510
+https://mumbai.polygonscan.com/address/0x1e4eF3d5ca14F68b21A4587b027cEb5986cb7510#code
+
+
+SMART CONTRACT W3Mv3 - All types of investments and whitelisting
+0x872b916EAEDD74162Be2BC5b418d48C9E359EbEb
+https://mumbai.polygonscan.com/address/0x872b916EAEDD74162Be2BC5b418d48C9E359EbEb#code
+
+
+SMART CONTRACT W3Mv4 - Fixed typos and tested implemented
+0x256452E79137B1D8f3c7eb3Ed10d9eb782F43BE1
+https://mumbai.polygonscan.com/address/0x256452E79137B1D8f3c7eb3Ed10d9eb782F43BE1#code
+
+
+SMART CONTRACT W3Mv4 - Sepolia
+0x426E8d4F56FB9D13b2b5f19380e9a53249d1ec27
+https://sepolia.etherscan.io/address/0x426E8d4F56FB9D13b2b5f19380e9a53249d1ec27#readContract
+
+
+SMART CONTRACT W3Mv5 - Added security measures - Mumbai
+0x8CdC4fc4e4C717b32CbDcA6f0c80093e8bCC071C 
+https://mumbai.polygonscan.com/address/0x8CdC4fc4e4C717b32CbDcA6f0c80093e8bCC071C#code
+
+SMART CONTRACT W3Mv5 - Added security measures - Sepolia
+0xBd146c6c0Cc96f76da7c012ed3b8937f6862E736
+https://sepolia.etherscan.io/address/0xBd146c6c0Cc96f76da7c012ed3b8937f6862E736#readContract
+
+
+SMART CONTRACT W3Mv7 - Updated business logic requirements - Mumbai
+0xe344aE725287AaD3C5341B739512EFc077Ad9dC5
+https://mumbai.polygonscan.com/address/0xe344aE725287AaD3C5341B739512EFc077Ad9dC5#code
+
+SMART CONTRACT W3Mv7 - Updated business logic requirements - Sepolia
+0x4D1168A3F1ee16300F0c91e1fB49Ca7b15a28465
+https://sepolia.etherscan.io/address/0x4D1168A3F1ee16300F0c91e1fB49Ca7b15a28465#readContract
+
+
+CRYPTO TOKEN ADDRESSES OVER POLYGON TESTNET (MUMBAI)
+
+MATIC Native token. Must be obtained from Faucet https://mumbaifaucet.com/
+USDC https://mumbai.polygonscan.com/address/0x19a09c6fd7f643b9515C4FfC0B234B5bFc0F2E0F#writeContract
+USDT https://mumbai.polygonscan.com/address/0x93678f9a27F43F0da85586FDE54a51E5F3e5eefd#writeContract
+WBTC https://mumbai.polygonscan.com/address/0x7B3776a036E72A1eb75ff1C8ec7B35cF07b7A9EB#writeContract
+WETH https://mumbai.polygonscan.com/address/0x8d8FF4B47f2bCfafFaba055574bAb62B3A215819#writeContract
+
+
+CRYPTO TOKEN ADDRESSES OVER ETHEREUM TESTNET (SEPOLIA)
+
+MATIC/ETH Native token. Must be obtained from Faucet https://sepoliafaucet.com/
+USDC https://sepolia.etherscan.io/address/0x256452E79137B1D8f3c7eb3Ed10d9eb782F43BE1#code 
+USDT https://sepolia.etherscan.io/address/0xfd070C28BD649624080637A16F994161B6Fb84e1#code
+WBTC https://sepolia.etherscan.io/address/0x516fd969524C6f0f429ffca1959521610c0364D7#code
+WETH https://sepolia.etherscan.io/address/0x8CdC4fc4e4C717b32CbDcA6f0c80093e8bCC071C#code
+
+
+CRYPTO TOKEN ADDRESSES OVER REAL POLYGON
+
+MATIC/ETH Native token
+USDC 0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359 0x3c499c542cef5e3811e1192ce70d8cc03d5c3359
+USDT 0xc2132d05d31c914a87c6611c10748aeb04b58e8f 0xc2132d05d31c914a87c6611c10748aeb04b58e8f
+WBTC 0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6 0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6
+WETH 0x7ceb23fd6bc0add59e62ac25578270cff1b9f619 0x7ceb23fd6bc0add59e62ac25578270cff1b9f619
+
+ORACLE PRICE DATA FEED BY CHAINLINK OVER REAL POLYGON
+
+MATIC / USD 0xAB594600376Ec9fD91F8e885dADF0CE036862dE0
+USDC / USD  0xfE4A8cc5b5B2366C1B58Bea3858e81843581b2F7
+USDT / USD  0x0A6513e40db6EB1b165753AD52E80663aeA50545
+WBTC / USD  0xDE31F8bFBD8c84b5360CFACCa3539B938dd78ae6
+WETH / USD  0xF9680D99D6C9589e2a93a78A04A279e509205945
+
+
+100000000000000000000000 100K
+10000000000000000000000 10K
+1000000000000000000000 1K
+100000000000000000000 100
+10000000000000000000 10
+1000000000000000000 1
+
+

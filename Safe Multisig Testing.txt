@@ -1,0 +1,21 @@
+1. Crear la multisig con 3 direcciones que controlo
+
+0x498C47066AdeB22Ba23953d890eD6b540411e350 Main
+0xB803cB7d42291DC78C5f4Db23B7363c04c6274A4
+0x350441F8a82680a785FFA9d3EfEa60BB4cA417f8
+
+Safe wallet https://app.safe.global/home?safe=sep:0x085D39F7E92F07d08b2027C24752f2cD180e959e
+
+Smart contract https://sepolia.etherscan.io/address/0x426E8d4F56FB9D13b2b5f19380e9a53249d1ec27#readContract
+
+
+2. Cambiar el owner
+3. Enviar una transacción de añadir inversionista
+4. Enviar una transacción de emitir tokens ToDo
+
+
+SMART CONTRACT W3Mv4 - Sepolia
+0x426E8d4F56FB9D13b2b5f19380e9a53249d1ec27
+https://sepolia.etherscan.io/address/0x426E8d4F56FB9D13b2b5f19380e9a53249d1ec27#readContract
+
+

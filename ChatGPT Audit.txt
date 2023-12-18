@@ -1,0 +1,401 @@
+1. Reentrancy Vulnerability in addToWhiteList and removeFromWhiteList:
+
+Vulnerability: The addToWhiteList and removeFromWhiteList functions perform state changes before emitting events. This can potentially introduce reentrancy vulnerabilities.
+Mitigation: Follow the "Checks-Effects-Interactions" pattern. Place state-changing operations after event emission.
+Response: False positive for this case, in this case the event emission only makes sense wfter the execution of the change of estate.
+
+
+2. Gas Limit and Loops in Investor Lists:
+
+Vulnerability: If the white list or qualified investor list becomes too large, the gas cost of adding or removing addresses could exceed the block gas limit.
+Mitigation: Consider alternative patterns such as using mappings or paginating the operations if the lists are expected to grow significantly.
+Response: False positive for this case, the white list and qualified investor list is a mapping already.
+
+3. Owner and White Lister Authentication in Investor Lists:
+
+Vulnerability: The addToWhiteList, removeFromWhiteList, addToQualifiedInvestorList, and removeFromQualifiedInvestorList functions check for ownership or white lister authorization. If compromised, an attacker could manipulate the lists.
+Mitigation: Ensure secure key management and consider multi-signature schemes for critical operations. Regularly review and update the list of authorized addresses.
+Response: Added in the list of vulnerabilities to be aware of.
+
+4. External Calls in Modifier:
+
+Vulnerability: The investorIsOnWhiteList modifier includes an external call to investorsWhiteList[msg.sender]. External calls in modifiers can lead to unexpected behavior.
+Mitigation: Avoid external calls in modifiers. Move the check to the function body.
+Response: False positive for this case, the check doesn't execute an external call. It won't be added to the function body because it would become a redundant line.
+
+5. Decimal Math Operations:
+
+Vulnerability: The calculateTotalW3mTokenToReturn function performs mathematical operations involving decimals without explicitly handling rounding issues.
+Mitigation: Consider using a library like OpenZeppelin's SafeMath for arithmetic operations or use fixed-point arithmetic to handle precision.
+Response: Implemented SafeMath, althogh I'm already using solidity +0.8.0 which has SafeMath natively implemented
+
+6. Fallback Function:
+
+Vulnerability: The fallback function is present without any specific implementation. This can lead to accidental loss of funds.
+Mitigation: Implement a fallback function with a clear purpose or consider removing it.
+Response: False positive for this case, the smart contract already has a recieve() function.
+
+7. Lack of Access Control in pause and unpause Functions:
+
+Vulnerability: The pause and unpause functions lack access control. Anyone can pause and unpause the contract.
+Mitigation: Add access control modifiers (e.g., onlyOwner) to the pause and unpause functions.
+Response: False positive for this case, the smart contract has the onlyOwner modifier for both functions.
+
+8. Update WhiteLister and Treasury Addresses:
+
+Vulnerability: There are no functions to update the white lister and treasury addresses. If these addresses need to be updated, implement functions with proper access controls.
+Mitigation: Implement functions to update the white lister and treasury addresses, ensuring proper authorization.
+Response: False positive for this case, the functions updateWhiteListerAddress and updateTreasuryAddress already exist and can only be executed by the owner.
+
+9. Reentrancy Vulnerability in Transfer Function:
+
+Vulnerability: The _transfer function (assuming it's part of the contract) performs state changes before emitting events, potentially exposing the contract to reentrancy attacks.
+Mitigation: Follow the "Checks-Effects-Interactions" pattern. Place state-changing operations after event emission.
+Response: False positive for this case, this function is not part of the contract. The transfer() function is and it's already secured by safe require checks.
+
+General Recommendations:
+
+Use the latest version of Solidity and libraries like OpenZeppelin. DONE
+Consider using the reentrancyGuard modifier to protect functions against reentrancy attacks. DONE
+Response: Added reentrancyGuard for functions: investFromMatic, investFromMUsdc, investFromMUsdt, investFromWbtc, investFromWeth and receive()
+
+
+------------------------------------------------------------------------------------------------
+1. Arbitrary Minting in tokenIssuance Function:
+
+Vulnerability: The tokenIssuance function allows the owner to mint an arbitrary amount of W3M tokens.
+Mitigation: Implement a minting cap or limit to control the total supply. Use a variable to track the total supply and ensure it doesn't exceed a predefined maximum.
+Response: PENDING ANSWER FROM TEAM
+
+2. Possible Integer Overflow in tokenIssuance:
+
+Vulnerability: If the total supply approaches the maximum value of uint256, adding _amount could cause an integer overflow.
+Mitigation: Use SafeMath for arithmetic operations to prevent integer overflow.
+Response: In case of interger overflow, the EVM natively throws the error NUMERIC_FAULT because it uses solidity +0.8.0. Added SafeMath.add anyways.
+
+3. Gas Limit and Loop in investFromUsdc Function:
+
+Vulnerability: If the list of investors becomes too large, the gas cost of updating mappings could exceed the block gas limit.
+Mitigation: Consider alternative patterns such as using a linked list or paginating the operations if the list is expected to grow significantly.
+Response: False positive for this case, the list of investors never goes through a loop, it's a direct call to the mapping.
+
+4. Lack of Access Control in investFromMatic and investFromUsdc:
+
+Vulnerability: Any address can call the investFromMatic and investFromUsdc functions, potentially impacting the state of the contract.
+Mitigation: Add access control modifiers (e.g., onlyOwner) or restrict these functions to specific roles if necessary.
+Response: False positive for this case, both functions can only be called by investors who were previously added to the whitelist.
+
+5. Potential Reentrancy Issue in investFromMatic and investFromUsdc:
+
+Vulnerability: The functions perform state changes before external calls (e.g., transferring MATIC or USDC), which could introduce reentrancy vulnerabilities.
+Mitigation: Follow the "Checks-Effects-Interactions" pattern. Place state-changing operations after external calls.
+Response: False positive for this case, both functions only execute validation functions before the transfering of tokens.
+
+6. Potential Rounding Issues in calculateTotalW3mTokenToReturn:
+
+Vulnerability: Performing arithmetic operations on decimals without handling rounding issues may result in unexpected token amounts.
+Mitigation: Use a library like OpenZeppelin's SafeMath for arithmetic operations or use fixed-point arithmetic to handle precision.
+Response: SafeMath already added to the calculateTotalW3mTokenToReturn function.
+
+7. Reentrancy Vulnerability in validateMaximumInvestedAmountAndInvestorLimit:
+
+Vulnerability: The function performs state changes before emitting an event. This could introduce reentrancy vulnerabilities.
+Mitigation: Follow the "Checks-Effects-Interactions" pattern. Place state-changing operations after event emission.
+Response: False positive for this case, the function only executes validation operations, there are no state changes.
+
+8. Fallback Function:
+
+Vulnerability: The fallback function is present without any specific implementation. This can lead to accidental loss of funds.
+Mitigation: Implement a fallback function with a clear purpose or consider removing it.
+Response: False positive for this case, the smart contract already has a recieve() function.
+
+General Recommendations:
+
+Use the latest version of Solidity and libraries like OpenZeppelin. DONE
+Consider using the nonReentrant modifier from OpenZeppelin to prevent reentrancy attacks. DONE
+Consider having external parties review the contract, and conduct thorough testing on testnets. DONE
+------------------------------------------------------------------------------------------------
+1. Reentrancy Vulnerability:
+
+Vulnerability: The functions (investFromUsdt, investFromWbtc, investFromWeth) perform state changes before external calls, which can introduce reentrancy vulnerabilities.
+Mitigation: Follow the "Checks-Effects-Interactions" pattern. Place state-changing operations after external calls. Consider using the nonReentrant modifier from OpenZeppelin to prevent reentrancy attacks.
+Response: Alreay added the reentrancyGuard for those functions.
+
+2. Gas Limit and Loop:
+
+Vulnerability: If the list of investors becomes too large, the gas cost of updating mappings could exceed the block gas limit.
+Mitigation: Consider alternative patterns such as using a linked list or paginating the operations if the list is expected to grow significantly.
+Response: False positive for this case, the list of investors never goes through a loop, it's a direct call to the mapping.
+
+3. Integer Overflow in _amount Calculation:
+
+Vulnerability: The calculation of _amount could result in an integer overflow if the input value is very large.
+Mitigation: Ensure that the input value is within reasonable limits, or use SafeMath for arithmetic operations to prevent integer overflow.
+Response: The calculateTotalW3mTokenToReturn already performs the arithmetic operations using SafeMath.
+
+4. Potential Rounding Issues in calculateTotalW3mTokenToReturn:
+
+Vulnerability: Performing arithmetic operations on decimals without handling rounding issues may result in unexpected token amounts.
+Mitigation: Use a library like OpenZeppelin's SafeMath for arithmetic operations or use fixed-point arithmetic to handle precision.
+Response: The calculateTotalW3mTokenToReturn already performs the arithmetic operations using SafeMath.
+
+5. Fallback Function:
+
+Vulnerability: The fallback function is present without any specific implementation. This can lead to accidental loss of funds.
+Mitigation: Implement a fallback function with a clear purpose or consider removing it.
+Response: False positive for this case, the smart contract already has a recieve() function.
+
+6. Gas Limit for Token Transfers:
+
+Vulnerability: Token transfers may fail if they exceed the gas limit. Consider using a token transfer pattern that avoids potential gas issues.
+Mitigation: Implement a pattern where the recipient can claim their tokens rather than relying on direct transfers in a single transaction.
+Response: It was opted to face the gas limit risk and send the tokens directly to the multisig treasury wallet, rather than letting the funds in the smart contract.
+
+7. Access Control:
+
+Vulnerability: Any address can call the investment functions, potentially impacting the state of the contract.
+Mitigation: Add access control modifiers (e.g., onlyOwner) or restrict these functions to specific roles if necessary.
+Response: False positive for this case, both functions can only be called by investors who were previously added to the whitelist.
+
+8. Fallback Function:
+
+Vulnerability: The fallback function is present without any specific implementation. This can lead to accidental loss of funds.
+Mitigation: Implement a fallback function with a clear purpose or consider removing it.
+Response: False positive for this case, the smart contract already has a recieve() function.
+
+9. Gas Limit for Token Transfers:
+
+Vulnerability: Token transfers may fail if they exceed the gas limit. Consider using a token transfer pattern that avoids potential gas issues.
+Mitigation: Implement a pattern where the recipient can claim their tokens rather than relying on direct transfers in a single transaction.
+Response: It was opted to face the gas limit risk and send the tokens directly to the multisig treasury wallet, rather than letting the funds in the smart contract.
+
+
+General Recommendations:
+
+Use the latest version of Solidity and libraries like OpenZeppelin. DONE
+Consider using the nonReentrant modifier from OpenZeppelin to prevent reentrancy attacks. DONE
+Consider having external parties review the contract, and conduct thorough testing on testnets. DONE
+------------------------------------------------------------------------------------------------
+1. Access Control:
+
+Vulnerability: Allowing only the owner to update critical parameters is good, but ensure that ownership cannot be transferred unexpectedly.
+Mitigation: Implement a secure ownership transfer mechanism, such as requiring multiple signatures or using a time-delayed ownership transfer pattern.
+Response: This access control is externally implemented because the owner of the smart contract is a Safe Multisig which requires 2/3 signers to approve any onlyOwner transaction.
+
+2. Integer Overflow:
+
+Vulnerability: The contract could be susceptible to integer overflow if any of the parameters (_newW3mPrice, _newMinimumInvestmentAllowedInUSD, _newMaximumInvestmentAllowedInUSD) become extremely large.
+Mitigation: Use SafeMath for arithmetic operations to prevent integer overflow.
+Response: False positive for this case, non of these functions does perform any arithmetic operations.
+
+3. Zero Address Check:
+
+Vulnerability: The functions updateWhiteListerAddress and updateTreasuryAddress do not allow the zero address check for _newWhiteListerAddress and _newTreasuryAddress.
+Mitigation: Include a check to ensure that the new address is not the zero address.
+Response: False positive for this case, the identified vulnerability doesn't make sense. The check of a zero address is already included.
+
+4. Lack of Validation for Min/Max Investments:
+
+Vulnerability: The contract doesn't validate whether the new minimum and maximum investment values are consistent with each other (e.g., ensuring the maximum is greater than or equal to the minimum).
+Mitigation: Add validation checks to ensure that the new maximum investment is greater than or equal to the new minimum investment.
+Response: Requirement line of code validation added to the functions updateMinimumInvestmentAllowedInUSD() and updateMaximumInvestmentAllowedInUSD()
+
+5. Event Data Consistency:
+
+Vulnerability: The emitted events carry the new values as data, but it's crucial to ensure the consistency of the emitted data.
+Mitigation: Double-check that the events are emitting the correct updated values for each parameter.
+Response: Double-check performed, the events are emiting the correct updated values for each parameter.
+
+6. Consider Using the nonReentrant Modifier:
+
+Vulnerability: As a best practice, consider using the nonReentrant modifier from OpenZeppelin to prevent reentrancy attacks, especially if the contract interacts with other contracts or external systems.
+Response: Added reentrancyGuard for functions: investFromMatic, investFromMUsdc, investFromMUsdt, investFromWbtc, investFromWeth and receive()
+
+7. Fallback Function:
+
+Vulnerability: The contract does not have a fallback function. Consider whether it's intentional and whether any Ether sent to the contract should be handled.
+Response: False positive for this case, the smart contract already has a recieve() function.
+
+
+General Recommendations:
+
+Ensure the contract follows the latest Solidity version and best practices. DONE
+Consider code reviews and testing on testnets before deploying to the mainnet. DONE
+Consider adding detailed comments to explain the purpose and usage of each function. DONE
+------------------------------------------------------------------------------------------------ ToDo
+1. Access Control:
+
+Vulnerability: Allowing only the owner to update critical addresses is a good practice. Ensure that ownership cannot be transferred unexpectedly.
+Mitigation: Implement a secure ownership transfer mechanism, such as requiring multiple signatures or using a time-delayed ownership transfer pattern.
+Response: This access control is externally implemented because the owner of the smart contract is a Safe Multisig which requires 2/3 signers to approve any onlyOwner transaction.
+
+
+2. Zero Address Check:
+
+Vulnerability: The functions do not check whether the new addresses (_newMaticPriceFeedAddress, _newUsdcTokenAddress, _newUsdcPriceFeedAddress, _newUsdtTokenAddress, _newUsdtPriceFeedAddress) are the zero address.
+Mitigation: Include a check to ensure that the new addresses are not the zero address.
+Response: False positive for this case, literally each and every function implements that check.
+
+3. Contract Interfaces:
+
+Vulnerability: The contract interfaces (dataFeedMatic, dataFeedUsdc, dataFeedUsdt) are updated without a proper check. If the new address does not conform to the expected interface, it may result in unexpected behavior.
+Mitigation: Add checks to verify that the new address adheres to the expected interface, possibly through a standardized function or an interface verification mechanism.
+Response: Added checks to verify the description of the smart contract before changing the data feed price, on each one of the functions.
+
+4. Event Data Consistency:
+
+Vulnerability: The emitted events carry the new values as data, but it's crucial to ensure the consistency of the emitted data.
+Mitigation: Double-check that the events are emitting the correct updated addresses for each parameter.
+Response: Double-check performed, the events are emiting the correct updated values for each parameter.
+
+5. Fallback Function:
+
+Vulnerability: The contract does not have a fallback function. Consider whether it's intentional and whether any Ether sent to the contract should be handled.
+Response: False positive for this case, the smart contract already has a recieve() function.
+
+
+6. Consider Using the nonReentrant Modifier:
+
+Vulnerability: As a best practice, consider using the nonReentrant modifier from OpenZeppelin to prevent reentrancy attacks, especially if the contract interacts with other contracts or external systems.
+Response: Added reentrancyGuard for functions: investFromMatic, investFromMUsdc, investFromMUsdt, investFromWbtc, investFromWeth and receive()
+
+
+General Recommendations:
+
+Ensure the contract follows the latest Solidity version and best practices. DONE
+Consider code reviews and testing on testnets before deploying to the mainnet. DONE
+Consider adding detailed comments to explain the purpose and usage of each function. DONE
+------------------------------------------------------------------------------------------------
+1. Access Control:
+
+Vulnerability: Allowing only the owner to update critical addresses is a good practice. Ensure that ownership cannot be transferred unexpectedly.
+Mitigation: Implement a secure ownership transfer mechanism, such as requiring multiple signatures or using a time-delayed ownership transfer pattern.
+Response: This access control is externally implemented because the owner of the smart contract is a Safe Multisig which requires 2/3 signers to approve any onlyOwner transaction.
+
+
+2. Zero Address Check:
+
+Vulnerability: The functions do not check whether the new addresses (_newWbtcTokenAddress, _newWbtcPriceFeedAddress, _newWethTokenAddress, _newWethPriceFeedAddress) are the zero address.
+Mitigation: Include a check to ensure that the new addresses are not the zero address.
+Response: False positive for this case, literally each and every function implements that check.
+
+
+3. Contract Interfaces:
+
+Vulnerability: The contract interfaces (wbtcToken, dataFeedWbtc, wethToken, dataFeedWeth) are updated without a proper check. If the new address does not conform to the expected interface, it may result in unexpected behavior.
+Mitigation: Add checks to verify that the new address adheres to the expected interface, possibly through a standardized function or an interface verification mechanism.
+Response: Added checks to verify the description of the smart contract before changing the data feed price, on each one of the functions.
+
+4. Event Data Consistency:
+
+Vulnerability: The emitted events carry the new values as data, but it's crucial to ensure the consistency of the emitted data.
+Mitigation: Double-check that the events are emitting the correct updated addresses for each parameter.
+Response: Double-check performed, the events are emiting the correct updated values for each parameter.
+
+
+5. Fallback Function:
+
+Vulnerability: The contract does not have a fallback function. Consider whether it's intentional and whether any Ether sent to the contract should be handled.
+Response: False positive for this case, the smart contract already has a recieve() function.
+
+
+6. Consider Using the nonReentrant Modifier:
+
+Vulnerability: As a best practice, consider using the nonReentrant modifier from OpenZeppelin to prevent reentrancy attacks, especially if the contract interacts with other contracts or external systems.
+Response: Added reentrancyGuard for functions: investFromMatic, investFromMUsdc, investFromMUsdt, investFromWbtc, investFromWeth and receive()
+
+
+General Recommendations:
+
+Ensure the contract follows the latest Solidity version and best practices. DONE
+Consider code reviews and testing on testnets before deploying to the mainnet. DONE
+Consider adding detailed comments to explain the purpose and usage of each function. DONE
+
+------------------------------------------------------------------------------------------------
+
+1. Oracle Security:
+
+Vulnerability: The security of the contract relies on the security of the oracles (dataFeedMatic, dataFeedUsdc, dataFeedUsdt, dataFeedWbtc, dataFeedWeth). If these oracles are compromised, the price data can be manipulated.
+Mitigation: Use reputable and secure oracles. Consider using decentralized oracles or aggregating data from multiple oracles to reduce the risk of manipulation.
+Response: Already using the decentralized oracles of Chainlink to obtain the price feed data for every token.
+
+2. Unchecked Revert in Oracle Call:
+
+Vulnerability: The contract does not check for errors or reverts in the oracle call. If the oracle call fails or reverts, it might lead to unexpected behavior.
+Mitigation: Implement error handling for oracle calls, such as checking the return value or using a try-catch mechanism if available.
+Response: Implemented try-catch mechanism when calling the price from the oracles.
+
+3. Data Type Conversion:
+
+Vulnerability: The code directly converts int256 to uint256 without validating the range or checking for negative values, potentially leading to unexpected results.
+Mitigation: Ensure that the oracle response is within the valid range for conversion to uint256. Consider handling negative values appropriately if they are a possibility.
+Response: It's ensured that the oracle response is withing the valid range for conversion to uint256, given the fact that cryptocurrencies values are not negative.
+
+
+4. Gas Limit Consideration:
+
+Vulnerability: If the oracle response is too large or requires significant gas for processing, the function might exceed the gas limit, causing the transaction to fail.
+Mitigation: Assess the gas consumption of oracle calls and ensure that the contract can handle the gas cost. If necessary, consider breaking down complex operations or using off-chain solutions.
+Response: The gas consumption of oracle calls is not so significant and the contract can handle the gas cost. Complex operations have already been broken down and there are no plans of using off-chain solutions.
+
+5. Consistency in Error Handling:
+
+Vulnerability: There is no consistent error handling mechanism across functions. In case of issues, users might receive generic errors, making it harder to diagnose problems.
+Mitigation: Implement a consistent error-handling mechanism, including meaningful error messages and possibly error codes to assist users and developers in understanding and resolving issues.
+Response: False positive for this case. Every function has it's own revert mechanisms and customized meaniningfull error messages.
+
+6. Consider Adding View or Pure Modifiers:
+
+Vulnerability: While these functions are marked as view, which indicates that they should not modify state, adding the view or pure modifiers can provide additional assurance and help prevent accidental modifications.
+Mitigation: Add the view or pure modifier to explicitly convey the intended behavior and potentially catch accidental state modifications during compilation.
+Response: The functions that require the view modifier are already tagget that way.
+
+7. Fallback Function:
+
+Vulnerability: The contract does not have a fallback function. Consider whether it's intentional and whether any Ether sent to the contract should be handled.
+Response: False positive for this case, the smart contract already has a recieve() function.
+
+
+General Recommendations:
+
+Ensure the contract follows the latest Solidity version and best practices. DONE
+Consider code reviews and testing on testnets before deploying to the mainnet. DONE
+Consider adding detailed comments to explain the purpose and usage of each function. DONE
+------------------------------------------------------------------------------------------------
+1. Lack of Access Control on Receive Function:
+
+Vulnerability: The receive function allows the contract to receive MATIC without any access control, potentially leading to unintentional transfers. Additionally, it could be a security risk if there's no specific use case for accepting MATIC directly.
+Mitigation: Consider adding an access control modifier or condition to ensure that MATIC can only be received from trusted sources and for a specific purpose.
+Response: PENDING TO GET ANSWER FROM AUDIT
+
+2. Access Control for Pause and Unpause Functions:
+
+Vulnerability: The pause and unpause functions can be called by the owner, but there's no access control check for potential administrative roles or emergency situations.
+Mitigation: Depending on the contract's requirements, you might consider implementing more granular access control roles (e.g., admin, emergency pauser) to handle different scenarios. This helps prevent misuse of these functions.
+Response: For this time pause and unpause functions are reserved only to the owner, which is a multisig.
+
+3. Access Control for Ownership Transfer:
+
+Vulnerability: The ownership transfer function (transferOwnership) does not check for additional roles, allowing the owner to transfer ownership to any address without restriction.
+Mitigation: Depending on the contract's design, consider implementing additional access control roles or a multisignature scheme to enhance security. This ensures that ownership transfers are conducted with the necessary checks and balances.
+Response: This access control is externally implemented because the owner of the smart contract is a Safe Multisig which requires 2/3 signers to approve any onlyOwner transaction.
+
+4. Reentrancy Vulnerability:
+
+Vulnerability: The provided code does not include reentrancy protection, which might be a concern depending on the contract's complexity and potential interactions with other contracts.
+Mitigation: Consider implementing the ReentrancyGuard pattern or using the reentrancy-safe modifier on functions that perform external calls. This helps prevent reentrancy attacks where external contracts attempt to call back into the current contract.
+Response: Added reentrancyGuard for functions: investFromMatic, investFromMUsdc, investFromMUsdt, investFromWbtc, investFromWeth and receive()
+
+
+5. Fallback Function:
+
+Vulnerability: The contract does not have a fallback function. Consider whether it's intentional and whether any Ether sent to the contract should be handled.
+Response: False positive for this case, the smart contract already has a recieve() function.
+
+
+General Recommendations:
+
+Ensure the contract follows the latest Solidity version and best practices. DONE
+Consider code reviews and testing on testnets before deploying to the mainnet. DONE
+Consider adding detailed comments to explain the purpose and usage of each function. DONE
+
